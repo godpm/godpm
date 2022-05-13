@@ -2,12 +2,13 @@ package http
 
 import (
 	"github.com/fasthttp/router"
+	"github.com/phuslu/log"
 	"github.com/valyala/fasthttp"
 )
 
 // RunServer run http server
 func RunServer() {
-	fasthttp.ListenAndServe(":8080", configRoute().Handler)
+	log.Fatal().Msgf("%v", fasthttp.ListenAndServe(":8080", configRoute().Handler))
 }
 
 func configRoute() *router.Router {
