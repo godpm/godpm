@@ -2,12 +2,15 @@ package main
 
 import (
 	"flag"
+	"time"
 
 	"github.com/godpm/godpm/cmd/dpmd/config"
+	"github.com/godpm/godpm/pkg/daemon"
+	"github.com/godpm/godpm/pkg/log"
 )
 
 var (
-	conf = flag.String("conf", "dpmd.config.yaml", "dpmd config file")
+	conf = flag.String("conf", "godpmd.config.yaml", "dpmd config file")
 )
 
 func setupConfig() {
@@ -16,4 +19,10 @@ func setupConfig() {
 
 func main() {
 	setupConfig()
+	daemon.Start(config.AppConfig.LogFile, config.AppConfig.PidFile, func() {
+		for i := 20; i > 0; i-- {
+			log.Error().Println("idx", 1)
+			time.Sleep(1 * time.Second)
+		}
+	})
 }
