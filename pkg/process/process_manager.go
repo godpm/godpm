@@ -1,7 +1,6 @@
 package process
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 
@@ -18,7 +17,7 @@ var pm *Manager
 
 func init() {
 	pm = &Manager{
-		procs: make(map[string]*Process, 0),
+		procs: make(map[string]*Process),
 		lock:  sync.Mutex{},
 	}
 }
@@ -48,7 +47,7 @@ func (pm *Manager) Find(name string) (proc *Process, ok bool) {
 func (pm *Manager) findOrError(name string) (proc *Process, err error) {
 	proc, ok := pm.Find(name)
 	if !ok {
-		err = errors.New(fmt.Sprintf("process %s not found", name))
+		err = fmt.Errorf("process %s not found", name)
 	}
 
 	return
@@ -99,7 +98,10 @@ func (pm *Manager) Remove(name string) (err error) {
 func (pm *Manager) StartAutoStart() (err error) {
 	pm.Range(func(proc *Process) bool {
 		if proc.conf.AutoStart {
-			proc.Start()
+			err := proc.Start()
+			if err != nil {
+				return false
+			}
 		}
 
 		return true
@@ -118,4 +120,9 @@ func (pm *Manager) Range(f func(proc *Process) bool) {
 			break
 		}
 	}
+}
+
+// CreateProcess create process
+func CreateProcess(conf *config.ProcessConfig) *Process {
+	return pm.CreateProcess(conf)
 }

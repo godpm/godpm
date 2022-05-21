@@ -17,5 +17,4 @@ type RunCMDArgs struct {
 
 // RunCMD
 func RunCMD(ctx *fasthttp.RequestCtx) {
-	return
 }

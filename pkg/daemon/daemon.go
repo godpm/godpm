@@ -1,8 +1,7 @@
 package daemon
 
 import (
-	"log"
-
+	"github.com/godpm/godpm/pkg/log"
 	"github.com/sevlyar/go-daemon"
 )
 
@@ -12,14 +11,18 @@ func Start(logFile, pidFile string, f func()) {
 
 	child, err := context.Reborn()
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal().Fatal(err.Error())
 	}
 
 	if child != nil {
 		return
 	}
 
-	defer context.Release()
+	defer func() {
+		if err := context.Release(); err != nil {
+			log.Error().Println("daemon context release failed ", err)
+		}
+	}()
 
 	f()
 }

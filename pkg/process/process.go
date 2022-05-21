@@ -69,7 +69,7 @@ func (p *Process) Start() (err error) {
 			break
 		}
 
-		retryTimes += 1
+		retryTimes++
 		p.changeStateTo(StateStarting)
 		p.startAt = time.Now()
 		err = p.cmd.Start()
@@ -106,16 +106,18 @@ func (p *Process) Start() (err error) {
 func (p *Process) checkIfProgramIsRunning(duration time.Duration) {
 	timer := time.NewTimer(duration)
 	defer timer.Stop()
-	select {
-	case <-timer.C:
-		if p.State == StateStarting {
-			p.changeStateTo(StateRunning)
-		}
+	<-timer.C
+	if p.State == StateStarting {
+		p.changeStateTo(StateRunning)
 	}
 }
 
 func (p *Process) waitForExist() {
-	p.cmd.Wait()
+	if err := p.cmd.Wait(); err != nil {
+		log.Error().Println("command wait failed ", err)
+		return
+	}
+
 	p.stopAt = time.Now()
 }
 
