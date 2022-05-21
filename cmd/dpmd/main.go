@@ -4,7 +4,7 @@ import (
 	"flag"
 	"time"
 
-	"github.com/godpm/godpm/cmd/dpmd/config"
+	"github.com/godpm/godpm/config"
 	"github.com/godpm/godpm/pkg/daemon"
 	"github.com/godpm/godpm/pkg/log"
 )
