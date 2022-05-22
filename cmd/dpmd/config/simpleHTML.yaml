@@ -1,0 +1,7 @@
+name: simplehtml
+directory: /Users/wentxwxy/scripts/simpleHtml
+command: go run main.go
+startsec: 1
+auto_start: true
+auto_restart: true
+

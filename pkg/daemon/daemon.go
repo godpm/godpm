@@ -1,12 +1,16 @@
 package daemon
 
 import (
+	"github.com/godpm/godpm/pkg/http"
 	"github.com/godpm/godpm/pkg/log"
+	"github.com/godpm/godpm/pkg/pprof"
+	"github.com/godpm/godpm/pkg/process"
+
 	"github.com/sevlyar/go-daemon"
 )
 
 // Start start daemon and process from config dir
-func Start(logFile, pidFile string, f func()) {
+func Start(logFile, pidFile string) {
 	context := daemon.Context{PidFileName: pidFile, LogFileName: logFile}
 
 	child, err := context.Reborn()
@@ -24,5 +28,20 @@ func Start(logFile, pidFile string, f func()) {
 		}
 	}()
 
-	f()
+	run()
+}
+
+func run() {
+	go func() {
+		log.Info().Println("Try to start process manager")
+		process.InitAndStart()
+	}()
+
+	go func() {
+		log.Info().Println("Try to start pprof server")
+		pprof.Run()
+	}()
+
+	log.Info().Println("Try to start HTTP server")
+	http.RunServer()
 }
