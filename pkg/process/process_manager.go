@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/godpm/godpm/config"
+	"github.com/godpm/godpm/pkg/log"
 )
 
 // Manager ..
@@ -98,10 +99,12 @@ func (pm *Manager) Remove(name string) (err error) {
 func (pm *Manager) StartAutoStart() (err error) {
 	pm.Range(func(proc *Process) bool {
 		if proc.conf.AutoStart {
-			err := proc.Start()
-			if err != nil {
-				return false
-			}
+			go func() {
+				err := proc.Start()
+				if err != nil {
+					log.Error().Println("start failed", err)
+				}
+			}()
 		}
 
 		return true
@@ -122,7 +125,56 @@ func (pm *Manager) Range(f func(proc *Process) bool) {
 	}
 }
 
+// List list all process
+func (pm *Manager) List() (procs []*Process) {
+	procs = make([]*Process, 0, len(pm.procs))
+
+	pm.Range(func(proc *Process) bool {
+		procs = append(procs, proc)
+		return true
+	})
+
+	return
+}
+
 // CreateProcess create process
 func CreateProcess(conf *config.ProcessConfig) *Process {
 	return pm.CreateProcess(conf)
+}
+
+// StartAutoStartProcesses start all the autostart process
+func StartAutoStartProcesses() (err error) {
+	return pm.StartAutoStart()
+}
+
+// Find find a process
+func Find(name string) (*Process, bool) {
+	return pm.Find(name)
+}
+
+// Start start a process
+func Start(name string) error {
+	return pm.Start(name)
+}
+
+// Stop stop a process
+func Stop(name string) error {
+	return pm.Stop(name)
+}
+
+// List list all process
+func List() []*Process {
+	return pm.List()
+}
+
+// InitAndStart init process and start all the autostart process
+func InitAndStart() {
+	for _, pc := range config.AppConfig.GetAllProcesssConfig() {
+		pm.CreateProcess(pc)
+	}
+
+	err := pm.StartAutoStart()
+	if err != nil {
+		log.Error().Println("start failed ", err)
+	}
 }

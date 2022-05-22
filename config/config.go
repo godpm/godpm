@@ -8,9 +8,11 @@ import (
 type Config struct {
 	Port              int    `yaml:"port"`
 	PprofPort         int    `yaml:"pprof_port"`
-	ConfigurationPath string `yaml:"config_path"`
+	ConfigurationPath string `yaml:"configuration_path"`
 	LogFile           string `yaml:"log_file"`
 	PidFile           string `yaml:"pid_file"`
+
+	processConfigs []*ProcessConfig
 }
 
 type ProcessConfig struct {
@@ -32,4 +34,11 @@ func SetupConfiguration(path string) {
 	conf := &Config{}
 	utils.ReadConfig(path, conf)
 	AppConfig = conf
+
+	AppConfig.processConfigs = ReadProcessConfigs(conf.ConfigurationPath)
+}
+
+// GetAllProcesssConfig get all process config
+func (conf *Config) GetAllProcesssConfig() []*ProcessConfig {
+	return conf.processConfigs
 }

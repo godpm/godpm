@@ -3,7 +3,7 @@ package utils
 import (
 	"os"
 
-	"github.com/phuslu/log"
+	"github.com/godpm/godpm/pkg/log"
 	"gopkg.in/yaml.v2"
 )
 
@@ -11,13 +11,13 @@ import (
 func ReadConfig(path string, conf interface{}) {
 	f, err := os.OpenFile(path, os.O_CREATE, 0666)
 	if err != nil {
-		log.Fatal().Msgf("%v", err)
+		log.Fatal().Fatalf("%v", err)
 	}
 
 	defer f.Close()
 
 	err = yaml.NewDecoder(f).Decode(conf)
 	if err != nil {
-		log.Fatal().Msgf("%v", err)
+		log.Fatal().Fatalf("%v", err)
 	}
 }

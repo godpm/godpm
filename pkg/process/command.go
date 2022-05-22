@@ -17,6 +17,8 @@ func (p *Process) createCommand() (err error) {
 	if len(args) > 1 {
 		p.cmd.Args = args
 	}
+
+	p.cmd.SysProcAttr = &syscall.SysProcAttr{}
 	p.setEnv()
 	p.setDirectory()
 	err = p.setUser(p.conf.User)
@@ -25,7 +27,13 @@ func (p *Process) createCommand() (err error) {
 		return
 	}
 
+	// signal can send to process's child process
+	setpgid(p.cmd.SysProcAttr)
 	return
+}
+
+func setpgid(attr *syscall.SysProcAttr) {
+	attr.Setpgid = true
 }
 
 func parseCommand(command string) (args []string) {
@@ -60,12 +68,11 @@ func (p *Process) setUser(username string) (err error) {
 		return
 	}
 
-	p.cmd.SysProcAttr = &syscall.SysProcAttr{
-		Credential: &syscall.Credential{
-			Gid: uint32(gid),
-			Uid: uint32(uid),
-		},
+	p.cmd.SysProcAttr.Credential = &syscall.Credential{
+		Gid: uint32(gid),
+		Uid: uint32(uid),
 	}
+
 	return
 }
 
