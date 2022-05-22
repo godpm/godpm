@@ -7,5 +7,4 @@ import (
 // Auth auth func
 func Auth(ctx *fasthttp.RequestCtx) {
 
-	return
 }
