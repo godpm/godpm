@@ -15,16 +15,17 @@ type Config struct {
 	processConfigs []*ProcessConfig
 }
 
+// ProcessConfig process config
 type ProcessConfig struct {
 	Name        string  `yaml:"name"`
-	Command     string  `yaml:"command"`
-	Environment string  `yaml:"environment"`
-	AutoStart   bool    `yaml:"auto_start"`
-	AutoRestart bool    `yaml:"auto_restart"`
-	User        string  `yaml:"user"`
-	Directory   *string `yaml:"directory"`
-	RetryTimes  *int    `yaml:"retry_times"`
-	StartSecs   *int    `yaml:"start_secs"`
+	Command     string  `yaml:"command"`      // process start command
+	Environment string  `yaml:"environment"`  // process start need env
+	AutoStart   bool    `yaml:"auto_start"`   // if process can auto_start
+	AutoRestart bool    `yaml:"auto_restart"` // if process can auto_restart
+	User        string  `yaml:"user"`         // which user can to start the process
+	Directory   *string `yaml:"directory"`    // process directory
+	RetryTimes  *int    `yaml:"retry_times"`  // when start failed, retry start, try times
+	StartSecs   *int    `yaml:"start_secs"`   // when start a process, then wait `start_secs` seconds to check if process is running
 }
 
 var AppConfig *Config
