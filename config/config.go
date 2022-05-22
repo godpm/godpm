@@ -13,6 +13,18 @@ type Config struct {
 	PidFile           string `yaml:"pid_file"`
 }
 
+type ProcessConfig struct {
+	Name        string  `yaml:"name"`
+	Command     string  `yaml:"command"`
+	Environment string  `yaml:"environment"`
+	AutoStart   bool    `yaml:"auto_start"`
+	AutoRestart bool    `yaml:"auto_restart"`
+	User        string  `yaml:"user"`
+	Directory   *string `yaml:"directory"`
+	RetryTimes  *int    `yaml:"retry_times"`
+	StartSecs   *int    `yaml:"start_secs"`
+}
+
 var AppConfig *Config
 
 // SetupConfiguration set configuration with path
