@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -17,9 +18,11 @@ func SignRequest(req *http.Request, secret string) (signStr string, err error) {
 	h := hmac.New(sha256.New, sk)
 	u := req.URL
 	data := req.Method + " " + u.Path
-	if u.RawQuery != "" {
-		data = data + "?" + u.RawQuery
+	if len(u.RawQuery) > 0 {
+		data = fmt.Sprintf("%s?%s", data, u.RawQuery)
 	}
+
+	_, _ = io.WriteString(h, data+"\nHost: "+req.Host)
 
 	ctType := req.Header.Get("Content-Type")
 	if ctType != "" {
