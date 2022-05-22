@@ -14,7 +14,7 @@ func ReadProcessConfigs(path string) (processConfigs []*ProcessConfig) {
 	path, _ = filepath.Abs(path)
 	log.Info().Println("try to load configuration from ", path)
 	processConfigs = []*ProcessConfig{}
-	filepath.Walk(path, func(p string, info fs.FileInfo, err error) error {
+	err := filepath.Walk(path, func(p string, info fs.FileInfo, err error) error {
 		if err != nil {
 			log.Fatal().Fatal("walk failed ", err)
 			return err
@@ -29,6 +29,7 @@ func ReadProcessConfigs(path string) (processConfigs []*ProcessConfig) {
 		processConfigs = append(processConfigs, pc)
 		return nil
 	})
+	log.Error().Println("Read configuration failed ", err)
 
 	return
 }
