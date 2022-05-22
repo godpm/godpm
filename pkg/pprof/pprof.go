@@ -3,6 +3,7 @@ package pprof
 import (
 	"fmt"
 	"net/http"
+	// only need pprof init func
 	_ "net/http/pprof"
 
 	"github.com/godpm/godpm/config"
