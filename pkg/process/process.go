@@ -15,7 +15,7 @@ import (
 type Process struct {
 	startAt       time.Time
 	stopAt        time.Time
-	State         string
+	state         string
 	conf          *config.ProcessConfig
 	cmd           *exec.Cmd
 	lock          sync.RWMutex
@@ -33,12 +33,13 @@ func New(conf *config.ProcessConfig) *Process {
 	return &Process{
 		cmd:        nil,
 		conf:       conf,
-		State:      StateStopped,
+		state:      StateStopped,
 		retryTimes: retry,
 	}
 }
 
-func (p *Process) name() string {
+// Name process name
+func (p *Process) Name() string {
 	return p.conf.Name
 }
 
@@ -52,54 +53,71 @@ func (p *Process) getStartSecs() int {
 
 // 	State start the process
 func (p *Process) Start() (err error) {
-	log.Info().Printf("try to start program: %s", p.name())
+	log.Info().Printf("try to start program: %s", p.Name())
 	err = p.createCommand()
 	if err != nil {
-		log.Error().Printf("try to start program: %s failed %#v", p.name(), err)
+		log.Error().Printf("try to start program: %s failed %#v", p.Name(), err)
 		return
 	}
 
 	retryTimes := 0
 	startSecs := p.getStartSecs()
 
-	for !p.manualStopped {
-		if retryTimes > p.retryTimes {
-			log.Error().Printf("failed to start program: %s, because try time is greater than %d", p.name(), p.retryTimes)
-			p.changeStateTo(StateFatal)
-			break
+	go func() {
+		for !p.manualStopped {
+			if retryTimes > p.retryTimes {
+				log.Error().Printf("failed to start program: %s, because try time is greater than %d", p.Name(), p.retryTimes)
+				p.changeStateTo(StateFatal)
+				break
+			}
+
+			retryTimes++
+			p.changeStateTo(StateStarting)
+			p.startAt = time.Now()
+			err = p.cmd.Start()
+			if err != nil {
+				log.Error().Printf("failed to start program: %s, err: %#v", p.Name(), err)
+				p.changeStateTo(StateBackOff)
+				continue
+			}
+
+			if startSecs <= 0 {
+				p.changeStateTo(StateRunning)
+			} else {
+				go p.checkIfProgramIsRunning(time.Duration(startSecs) * time.Second)
+			}
+
+			p.waitForExist()
+
+			if p.state == StateRunning {
+				p.changeStateTo(StateExited)
+			} else {
+				p.changeStateTo(StateBackOff)
+			}
+
+			if !p.conf.AutoRestart {
+				break
+			}
 		}
 
-		retryTimes++
-		p.changeStateTo(StateStarting)
-		p.startAt = time.Now()
-		err = p.cmd.Start()
-		if err != nil {
-			log.Error().Printf("failed to start program: %s, err: %#v", p.name(), err)
-			p.changeStateTo(StateBackOff)
-			continue
-		}
+		p.manualStopped = false
+	}()
 
-		if startSecs <= 0 {
-			p.changeStateTo(StateRunning)
-		} else {
-			go p.checkIfProgramIsRunning(time.Duration(startSecs) * time.Second)
-		}
+	return
+}
 
-		p.waitForExist()
-
-		if p.State == StateRunning {
-			p.changeStateTo(StateExited)
-		} else {
-			p.changeStateTo(StateBackOff)
-		}
-
-		if !p.conf.AutoRestart {
-			break
-		}
+// Pid pid info
+func (p *Process) Pid() int {
+	if p.cmd != nil && p.cmd.Process != nil {
+		return p.cmd.Process.Pid
 	}
 
-	p.manualStopped = false
-	return
+	return -1
+}
+
+// Uptime uptime
+func (p *Process) Uptime() time.Time {
+	return p.startAt
 }
 
 // checkIfProgramIsRunning wait untile endTime and check if program is starting
@@ -107,7 +125,7 @@ func (p *Process) checkIfProgramIsRunning(duration time.Duration) {
 	timer := time.NewTimer(duration)
 	defer timer.Stop()
 	<-timer.C
-	if p.State == StateStarting {
+	if p.state == StateStarting {
 		p.changeStateTo(StateRunning)
 	}
 }
@@ -136,7 +154,7 @@ func (p *Process) Stop() (err error) {
 	p.changeStateTo(StateStopping)
 	err = p.kill()
 	if err != nil {
-		log.Error().Printf("stop program: %s failed: %#v ", p.name(), err)
+		log.Error().Printf("stop program: %s failed: %#v ", p.Name(), err)
 		return
 	}
 

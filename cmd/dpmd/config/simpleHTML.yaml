@@ -1,5 +1,5 @@
 name: simplehtml
-directory: ~/scripts/simpleHtml
+directory: /Users/wentxwxy/scripts/simpleHtml
 command: go run main.go
 start_secs: 1
 auto_start: true

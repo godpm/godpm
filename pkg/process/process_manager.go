@@ -31,11 +31,14 @@ func (pm *Manager) CreateProcess(conf *config.ProcessConfig) *Process {
 	proc, ok := pm.procs[conf.Name]
 	if !ok {
 		proc := New(conf)
-		pm.procs[proc.name()] = proc
+		pm.procs[proc.Name()] = proc
 	}
 
 	return proc
 }
+
+//
+func (pm *Manager) Reread() {}
 
 // Find find one process
 func (pm *Manager) Find(name string) (proc *Process, ok bool) {
@@ -81,12 +84,8 @@ func (pm *Manager) Restart(name string) (err error) {
 		return
 	}
 
-	err = proc.Stop()
-	if err != nil {
-		return
-	}
-
-	return proc.Stop()
+	_ = proc.Stop()
+	return proc.Start()
 }
 
 // Remove remove a process
@@ -152,6 +151,10 @@ func Find(name string) (*Process, bool) {
 	return pm.Find(name)
 }
 
+func Restart(name string) (err error) {
+	return pm.Restart(name)
+}
+
 // Start start a process
 func Start(name string) error {
 	return pm.Start(name)
@@ -177,4 +180,9 @@ func InitAndStart() {
 	if err != nil {
 		log.Error().Println("start failed ", err)
 	}
+}
+
+// Reread reread process config
+func Reread() {
+	pm.Reread()
 }

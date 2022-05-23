@@ -1,4 +1,4 @@
-package client
+package rpc
 
 import (
 	"bytes"
@@ -37,7 +37,7 @@ func (htr *HTTPTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 // NewHTTPClient new http client with secret
 func NewHTTPClient(secret string) Clienter {
 	return &HTTPClient{
-		Client: &http.Client{Transport: &HTTPTransport{secret: secret}},
+		Client: &http.Client{Transport: &HTTPTransport{secret: secret, tr: http.DefaultTransport}},
 	}
 }
 
