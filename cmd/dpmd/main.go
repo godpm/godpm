@@ -5,6 +5,7 @@ import (
 
 	"github.com/godpm/godpm/config"
 	"github.com/godpm/godpm/pkg/daemon"
+	//	"github.com/godpm/godpm/pkg/process"
 )
 
 var (
@@ -17,5 +18,16 @@ func setupConfig() {
 
 func main() {
 	setupConfig()
+	// runProcess()
+	daemonStart()
+}
+
+func daemonStart() {
 	daemon.Start(config.AppConfig.LogFile, config.AppConfig.PidFile)
 }
+
+/*
+func runProcess() {
+	process.InitAndStart()
+	select {}
+}*/

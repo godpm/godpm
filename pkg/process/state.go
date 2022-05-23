@@ -19,12 +19,19 @@ const (
 
 func (p *Process) changeStateTo(state string) {
 	p.lock.Lock()
-	p.State = state
+	p.state = state
 	p.lock.Unlock()
 }
 
 func (p *Process) isRunning() bool {
 	p.lock.RLock()
 	defer p.lock.RUnlock()
-	return p.State == StateRunning
+	return p.state == StateRunning
+}
+
+// State state
+func (p *Process) State() string {
+	p.lock.RLock()
+	defer p.lock.RUnlock()
+	return p.state
 }

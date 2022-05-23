@@ -29,7 +29,10 @@ func ReadProcessConfigs(path string) (processConfigs []*ProcessConfig) {
 		processConfigs = append(processConfigs, pc)
 		return nil
 	})
-	log.Error().Println("Read configuration failed ", err)
+
+	if err != nil {
+		log.Error().Println("Read configuration failed ", err)
+	}
 
 	return
 }

@@ -18,6 +18,9 @@
 godpmd.log
 godpmd.pid
 
+# sample config file
+simpleHTML.yaml
+
 # Editor
 .idea/
 .vscode/

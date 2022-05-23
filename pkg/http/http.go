@@ -17,5 +17,14 @@ func RunServer() {
 func configRoute() *router.Router {
 	r := router.New()
 	r.GET("/", func(ctx *fasthttp.RequestCtx) {})
+	v1 := r.Group("/v1")
+	v1.POST("/deploy", func(ctx *fasthttp.RequestCtx) {
+	})
+
+	v1.PUT("/stop/{name}", Stop)
+	v1.GET("/status", Status)
+	v1.PUT("/restart/{name}", Restart)
+	v1.PUT("/start/{name}", Start)
+
 	return r
 }
