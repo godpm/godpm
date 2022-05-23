@@ -13,6 +13,11 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
-# log and pid file
+
+# Log and pid file
 godpmd.log
 godpmd.pid
+
+# Editor
+.idea/
+.vscode/
