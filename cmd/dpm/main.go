@@ -19,7 +19,7 @@ func main() {
 		Name:  "godpm",
 		Usage: "Golang based deploy and process manager",
 		Action: func(c *cli.Context) error {
-			handleInput(addr)
+			_ = handleInput(addr)
 			return nil
 		},
 
@@ -65,7 +65,7 @@ func main() {
 }
 
 func handleInput(addr string) error {
-	handleStatus([]string{}, addr)
+	_ = handleStatus([]string{}, addr)
 
 	buf := bufio.NewReader(os.Stdin)
 
@@ -167,7 +167,7 @@ func prettyPrintProcessInfo(procs []http.ProcStatus) {
 		pid := fmt.Sprintf("pid %d", proc.Pid)
 		fmt.Print(pid)
 		fmt.Print(strings.Repeat(" ", 12-len(pid)))
-		uptime := time.Now().Sub(proc.Uptime).String()
+		uptime := time.Since(proc.Uptime).String()
 		fmt.Print(uptime)
 		fmt.Println("")
 	}

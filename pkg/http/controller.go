@@ -12,7 +12,7 @@ import (
 // Stop stop process
 func Stop(ctx *fasthttp.RequestCtx) {
 	name := ctx.UserValue("name").(string)
-	process.Stop(name)
+	_ = process.Stop(name)
 }
 
 // ProcStatus process status
@@ -35,7 +35,7 @@ func Status(ctx *fasthttp.RequestCtx) {
 	} else {
 		proc, ok := process.Find(string(names))
 		if !ok {
-			ctx.Write([]byte(`{"message": "process not found"}`))
+			_, _ = ctx.Write([]byte(`{"message": "process not found"}`))
 			return
 		}
 		procs = append(procs, proc)
@@ -52,15 +52,15 @@ func Status(ctx *fasthttp.RequestCtx) {
 	}
 
 	b, _ := json.Marshal(&resp)
-	ctx.Write(b)
+	_, _ = ctx.Write(b)
 }
 
 // Restart ...
 func Restart(ctx *fasthttp.RequestCtx) {
 	name := ctx.UserValue("name").(string)
-	process.Restart(name)
+	_ = process.Restart(name)
 }
 func Start(ctx *fasthttp.RequestCtx) {
 	name := ctx.UserValue("name").(string)
-	process.Start(name)
+	_ = process.Start(name)
 }
