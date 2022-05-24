@@ -23,10 +23,10 @@ func (p *Process) changeStateTo(state string) {
 	p.lock.Unlock()
 }
 
-func (p *Process) isRunning() bool {
+func (p *Process) stateIs(state string) bool {
 	p.lock.RLock()
 	defer p.lock.RUnlock()
-	return p.state == StateRunning
+	return p.state == state
 }
 
 // State state

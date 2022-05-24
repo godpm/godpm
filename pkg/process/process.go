@@ -63,6 +63,7 @@ func (p *Process) getRestartPauseSecs() int {
 // 	State start the process
 func (p *Process) Start(wait bool) (err error) {
 	log.Info().Printf("try to start program: %s", p.Name())
+
 	err = p.createCommand()
 	if err != nil {
 		log.Error().Printf("try to start program: %s failed %#v", p.Name(), err)
@@ -107,14 +108,13 @@ func (p *Process) Start(wait bool) (err error) {
 			}
 
 			var (
-				processExited        = int32(0)
-				waitingGoroutineDone = int32(0)
+				processExited = int32(0)
 			)
 
 			if startSecs <= 0 {
 				p.changeStateTo(StateRunning)
 			} else {
-				go p.checkIfProgramIsRunning(time.Duration(startSecs)*time.Second, &processExited, &waitingGoroutineDone)
+				go p.checkIfProgramIsRunning(time.Duration(startSecs)*time.Second, &processExited)
 			}
 			waitFunc()
 
@@ -122,7 +122,7 @@ func (p *Process) Start(wait bool) (err error) {
 
 			atomic.StoreInt32(&processExited, 1)
 
-			if p.state == StateRunning {
+			if p.stateIs(StateRunning) {
 				p.changeStateTo(StateExited)
 			} else {
 				p.changeStateTo(StateBackOff)
@@ -158,13 +158,12 @@ func (p *Process) Uptime() time.Time {
 }
 
 // checkIfProgramIsRunning wait untile endTime and check if program is starting
-func (p *Process) checkIfProgramIsRunning(duration time.Duration, processExited, currentFuncDone *int32) {
+func (p *Process) checkIfProgramIsRunning(duration time.Duration, processExited *int32) {
 	end := time.Now().Add(duration)
 	for atomic.LoadInt32(processExited) == 0 && time.Now().Before(end) {
 		time.Sleep(100 * time.Millisecond)
 	}
 
-	atomic.StoreInt32(currentFuncDone, 1)
 	if p.state == StateStarting && atomic.LoadInt32(processExited) == 0 {
 		p.changeStateTo(StateRunning)
 	}
@@ -185,7 +184,7 @@ func (p *Process) Stop() (err error) {
 	p.manualStopped = true
 	p.lock.Unlock()
 
-	if !p.isRunning() {
+	if !p.stateIs(StateRunning) {
 		log.Error().Println("program is not running")
 		err = errors.New("program is not running")
 		return
