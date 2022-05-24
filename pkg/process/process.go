@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os/exec"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -51,8 +52,16 @@ func (p *Process) getStartSecs() int {
 	return 1
 }
 
+func (p *Process) getRestartPauseSecs() int {
+	if p.conf.RestartPause != nil {
+		return *p.conf.RestartPause
+	}
+
+	return 1
+}
+
 // 	State start the process
-func (p *Process) Start() (err error) {
+func (p *Process) Start(wait bool) (err error) {
 	log.Info().Printf("try to start program: %s", p.Name())
 	err = p.createCommand()
 	if err != nil {
@@ -62,6 +71,17 @@ func (p *Process) Start() (err error) {
 
 	retryTimes := 0
 	startSecs := p.getStartSecs()
+	restartPauseSecs := p.getRestartPauseSecs()
+	finishChan := make(chan struct{})
+
+	once := sync.Once{}
+	waitFunc := func() {
+		once.Do(func() {
+			if wait {
+				finishChan <- struct{}{}
+			}
+		})
+	}
 
 	go func() {
 		for !p.manualStopped {
@@ -71,6 +91,10 @@ func (p *Process) Start() (err error) {
 				break
 			}
 
+			if restartPauseSecs > 0 && retryTimes != 0 {
+				time.Sleep(time.Duration(restartPauseSecs) * time.Second)
+			}
+
 			retryTimes++
 			p.changeStateTo(StateStarting)
 			p.startAt = time.Now()
@@ -78,16 +102,25 @@ func (p *Process) Start() (err error) {
 			if err != nil {
 				log.Error().Printf("failed to start program: %s, err: %#v", p.Name(), err)
 				p.changeStateTo(StateBackOff)
+				waitFunc()
 				continue
 			}
+
+			var (
+				processExited        = int32(0)
+				waitingGoroutineDone = int32(0)
+			)
 
 			if startSecs <= 0 {
 				p.changeStateTo(StateRunning)
 			} else {
-				go p.checkIfProgramIsRunning(time.Duration(startSecs) * time.Second)
+				go p.checkIfProgramIsRunning(time.Duration(startSecs)*time.Second, &processExited, &waitingGoroutineDone)
 			}
+			waitFunc()
 
 			p.waitForExist()
+
+			atomic.StoreInt32(&processExited, 1)
 
 			if p.state == StateRunning {
 				p.changeStateTo(StateExited)
@@ -102,6 +135,10 @@ func (p *Process) Start() (err error) {
 
 		p.manualStopped = false
 	}()
+
+	if wait {
+		<-finishChan
+	}
 
 	return
 }
@@ -121,11 +158,14 @@ func (p *Process) Uptime() time.Time {
 }
 
 // checkIfProgramIsRunning wait untile endTime and check if program is starting
-func (p *Process) checkIfProgramIsRunning(duration time.Duration) {
-	timer := time.NewTimer(duration)
-	defer timer.Stop()
-	<-timer.C
-	if p.state == StateStarting {
+func (p *Process) checkIfProgramIsRunning(duration time.Duration, processExited, currentFuncDone *int32) {
+	end := time.Now().Add(duration)
+	for atomic.LoadInt32(processExited) == 0 && time.Now().Before(end) {
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	atomic.StoreInt32(currentFuncDone, 1)
+	if p.state == StateStarting && atomic.LoadInt32(processExited) == 0 {
 		p.changeStateTo(StateRunning)
 	}
 }

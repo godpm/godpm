@@ -12,7 +12,6 @@ import (
 func ReadProcessConfigs(path string) (processConfigs []*ProcessConfig) {
 
 	path, _ = filepath.Abs(path)
-	log.Info().Println("try to load configuration from ", path)
 	processConfigs = []*ProcessConfig{}
 	err := filepath.Walk(path, func(p string, info fs.FileInfo, err error) error {
 		if err != nil {
