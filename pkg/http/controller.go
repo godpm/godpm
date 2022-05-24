@@ -60,7 +60,9 @@ func Restart(ctx *fasthttp.RequestCtx) {
 	name := ctx.UserValue("name").(string)
 	_ = process.Restart(name)
 }
+
+// Start start process
 func Start(ctx *fasthttp.RequestCtx) {
 	name := ctx.UserValue("name").(string)
-	_ = process.Start(name)
+	_ = process.Start(name, true)
 }

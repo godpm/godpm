@@ -68,13 +68,13 @@ func (pm *Manager) Stop(name string) (err error) {
 }
 
 // Start start a process
-func (pm *Manager) Start(name string) (err error) {
+func (pm *Manager) Start(name string, wait bool) (err error) {
 	proc, err := pm.findOrError(name)
 	if err != nil {
 		return
 	}
 
-	return proc.Start()
+	return proc.Start(wait)
 }
 
 // Restart restart a process
@@ -85,7 +85,7 @@ func (pm *Manager) Restart(name string) (err error) {
 	}
 
 	_ = proc.Stop()
-	return proc.Start()
+	return proc.Start(false)
 }
 
 // Remove remove a process
@@ -99,7 +99,7 @@ func (pm *Manager) StartAutoStart() (err error) {
 	pm.Range(func(proc *Process) bool {
 		if proc.conf.AutoStart {
 			go func() {
-				err := proc.Start()
+				err := proc.Start(false)
 				if err != nil {
 					log.Error().Println("start failed", err)
 				}
@@ -156,8 +156,8 @@ func Restart(name string) (err error) {
 }
 
 // Start start a process
-func Start(name string) error {
-	return pm.Start(name)
+func Start(name string, wait bool) error {
+	return pm.Start(name, wait)
 }
 
 // Stop stop a process
