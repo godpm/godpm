@@ -21,6 +21,7 @@ func (p *Process) createCommand() (err error) {
 
 	p.cmd.SysProcAttr = &syscall.SysProcAttr{}
 	p.setEnv()
+	p.setLog()
 	p.setDirectory()
 	err = p.setUser(p.conf.User)
 	if err != nil {
@@ -86,5 +87,15 @@ func (p *Process) setEnv() {
 func (p *Process) setDirectory() {
 	if p.conf.Directory != nil {
 		p.cmd.Dir = *p.conf.Directory
+	}
+}
+
+func (p *Process) setLog() {
+	if p.conf.StdoutFile != nil {
+		p.cmd.Stdout = p.newLog(*p.conf.StdoutFile, p.stdoutMaxBytes(), p.stdoutMaxBackups())
+	}
+
+	if p.conf.StderrFile != nil {
+		p.cmd.Stderr = p.newLog(*p.conf.StderrFile, p.stderrMaxBytes(), p.stderrMaxBackups())
 	}
 }
