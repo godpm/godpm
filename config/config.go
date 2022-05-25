@@ -27,6 +27,7 @@ type ProcessConfig struct {
 	RetryTimes   *int    `yaml:"retry_times"`        // when start failed, retry start, try times
 	StartSecs    *int    `yaml:"start_secs"`         // when start a process, then wait `start_secs` seconds to check if process is running
 	RestartPause *int    `yaml:"restart_pause_secs"` // when start failed, wait `secs` to restart again
+	StopSignal   *string `yaml:"stop_signal"`        // stop signal default is TERM
 }
 
 var AppConfig *Config

@@ -18,7 +18,6 @@ func setupConfig() {
 
 func main() {
 	setupConfig()
-	// runProcess()
 	daemonStart()
 }
 
@@ -30,4 +29,5 @@ func daemonStart() {
 func runProcess() {
 	process.InitAndStart()
 	select {}
-}*/
+}
+*/

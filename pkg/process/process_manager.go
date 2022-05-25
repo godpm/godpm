@@ -182,6 +182,14 @@ func InitAndStart() {
 	}
 }
 
+// StopAllProcess stop all process
+func StopAllProcess() {
+	pm.Range(func(proc *Process) bool {
+		proc.Stop()
+		return true
+	})
+}
+
 // Reread reread process config
 func Reread() {
 	pm.Reread()

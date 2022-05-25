@@ -116,6 +116,7 @@ func (p *Process) Start(wait bool) (err error) {
 			} else {
 				go p.checkIfProgramIsRunning(time.Duration(startSecs)*time.Second, &processExited)
 			}
+
 			waitFunc()
 
 			p.waitForExist()
@@ -165,6 +166,7 @@ func (p *Process) checkIfProgramIsRunning(duration time.Duration, processExited 
 	}
 
 	if p.state == StateStarting && atomic.LoadInt32(processExited) == 0 {
+		log.Info().Printf("change program: %s to running", p.Name())
 		p.changeStateTo(StateRunning)
 	}
 }
@@ -202,8 +204,18 @@ func (p *Process) Stop() (err error) {
 }
 
 func (p *Process) kill() (err error) {
-
 	// include child process
 	pid := -(p.cmd.Process.Pid)
-	return syscall.Kill(pid, syscall.SIGKILL)
+	return syscall.Kill(pid, p.getStopSignal())
+}
+
+func (p *Process) getStopSignal() syscall.Signal {
+	if p.conf.StopSignal != nil {
+		s, ok := signalMap[*p.conf.StopSignal]
+		if ok {
+			return s
+		}
+	}
+
+	return syscall.SIGTERM
 }

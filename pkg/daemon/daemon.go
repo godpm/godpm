@@ -5,6 +5,8 @@ import (
 	"github.com/godpm/godpm/pkg/log"
 	"github.com/godpm/godpm/pkg/pprof"
 	"github.com/godpm/godpm/pkg/process"
+	"os"
+	"syscall"
 
 	"github.com/sevlyar/go-daemon"
 )
@@ -42,6 +44,26 @@ func run() {
 		pprof.Run()
 	}()
 
-	log.Info().Println("Try to start HTTP server")
-	http.RunServer()
+	go func() {
+
+		log.Info().Println("Try to start HTTP server")
+		http.RunServer()
+	}()
+
+	daemon.AddCommand(nil, syscall.SIGINT, func(sig os.Signal) error {
+		process.StopAllProcess()
+		return daemon.ErrStop
+	})
+
+	daemon.AddCommand(nil, syscall.SIGTERM, func(sig os.Signal) error {
+		process.StopAllProcess()
+		return daemon.ErrStop
+	})
+
+	daemon.AddCommand(nil, syscall.SIGQUIT, func(sig os.Signal) error {
+		process.StopAllProcess()
+		return daemon.ErrStop
+	})
+
+	daemon.ServeSignals()
 }
