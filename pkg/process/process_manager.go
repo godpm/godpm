@@ -185,7 +185,7 @@ func InitAndStart() {
 // StopAllProcess stop all process
 func StopAllProcess() {
 	pm.Range(func(proc *Process) bool {
-		proc.Stop()
+		_ = proc.Stop()
 		return true
 	})
 }

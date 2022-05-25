@@ -65,5 +65,5 @@ func run() {
 		return daemon.ErrStop
 	})
 
-	daemon.ServeSignals()
+	_ = daemon.ServeSignals()
 }
