@@ -8,11 +8,11 @@ import (
 )
 
 // newLog
-func (p *Process) newLog(path string, maxBytes int64, backups int) *lumberjack.Logger {
+func (p *Process) newLog(path string, maxBytes int, backups int) *lumberjack.Logger {
 
 	return &lumberjack.Logger{
 		Filename:   fixPath(*p.conf.Directory, path),
-		MaxSize:    int(maxBytes / 1024),
+		MaxSize:    maxBytes,
 		MaxBackups: backups,
 	}
 }

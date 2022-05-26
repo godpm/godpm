@@ -10,13 +10,13 @@ func (p *Process) dir() string {
 	return ""
 }*/
 
-func (p *Process) stdoutMaxBytes() int64 {
-	if p.conf.StdoutMaxBytes > 0 {
-		return p.conf.StdoutMaxBytes
+func (p *Process) stdoutMaxBytes() int {
+	if p.conf.StdoutMaxSize > 0 {
+		return p.conf.StdoutMaxSize
 	}
 
-	// default  100M
-	return 100 * 1024
+	// default  100MB
+	return 100
 }
 
 func (p *Process) stdoutMaxBackups() int {
@@ -27,13 +27,13 @@ func (p *Process) stdoutMaxBackups() int {
 	return 10
 }
 
-func (p *Process) stderrMaxBytes() int64 {
-	if p.conf.StderrMaxBytes > 0 {
-		return p.conf.StderrMaxBytes
+func (p *Process) stderrMaxBytes() int {
+	if p.conf.StderrMaxSize > 0 {
+		return p.conf.StderrMaxSize
 	}
 
-	// defautl 100
-	return 100 * 1024
+	// defautl 100MB
+	return 100
 }
 
 func (p *Process) stderrMaxBackups() int {
