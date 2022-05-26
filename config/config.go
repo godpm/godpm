@@ -29,10 +29,10 @@ type ProcessConfig struct {
 	RestartPause     *int    `yaml:"restart_pause_secs"` // when start failed, wait `secs` to restart again
 	StopSignal       *string `yaml:"stop_signal"`        // stop signal default is TERM
 	StdoutFile       *string `yaml:"stdout_file"`        // std_out
-	StdoutMaxBytes   int64   `yaml:"stdout_max_bytes"`   // std_out max bytes, byte, rotate
+	StdoutMaxSize    int     `yaml:"stdout_max_size"`    // std_out max size, MegaByte rotate, default 100MB
 	StdoutMaxBackups int     `yaml:"stdout_max_backups"` // number of logs to keep, default 10
 	StderrFile       *string `yaml:"stderr_file"`        // std_err
-	StderrMaxBytes   int64   `yaml:"stderr_max_bytes"`   //
+	StderrMaxSize    int     `yaml:"stderr_max_size"`    // default 100MB
 	StderrMaxBackups int     `yaml:"stderr_max_backups"` //
 }
 
